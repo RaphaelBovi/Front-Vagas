@@ -18,7 +18,7 @@ O link `api-rest_vagas.railway.internal` é uma **URL interna** do Railway que s
 
 1. O arquivo `.env` já está criado e configurado com a URL de produção:
    ```env
-   VITE_API_URL=https://api-restvagas-production.up.railway.app/api
+   VITE_API_URL=https://api-vagasraphael.com/api
    ```
 
    **Importante:** 
@@ -35,7 +35,7 @@ O link `api-rest_vagas.railway.internal` é uma **URL interna** do Railway que s
 
 Após configurar, você pode testar se a API está acessível:
 
-1. Abra o navegador e acesse: `https://api-restvagas-production.up.railway.app/api/curriculos/1` (substitua pelo ID de um currículo existente)
+1. Abra o navegador e acesse: `https://api-vagasraphael.com/api/curriculos/1` (substitua pelo ID de um currículo existente)
 2. Se retornar dados JSON, a API está funcionando
 3. Se retornar erro de CORS, você precisa configurar CORS no backend
 
@@ -61,7 +61,7 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/api/**")
-                    .allowedOrigins("http://localhost:5173", "https://seu-frontend.railway.app", "https://seu-frontend.vercel.app")
+                    .allowedOrigins("http://localhost:5173", "https://raphaelvagas.com", "https://www.raphaelvagas.com")
                     .allowedMethods("GET", "POST", "PUT", "DELETE")
                     .allowedHeaders("*");
             }
@@ -72,10 +72,12 @@ public class CorsConfig {
 
 ## 📌 Exemplo completo
 
-A URL pública do Railway configurada é: `https://api-restvagas-production.up.railway.app`
+O domínio personalizado configurado é: `raphaelvagas.com`
 
 No `.env` está configurado:
 ```env
-VITE_API_URL=https://api-restvagas-production.up.railway.app/api
+VITE_API_URL=https://api-vagasraphael.com/api
 ```
+
+**Nota:** Se sua API estiver hospedada em um domínio diferente ou na mesma URL do frontend, ajuste a URL conforme necessário.
 
