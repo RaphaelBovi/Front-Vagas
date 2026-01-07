@@ -1,18 +1,43 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { ESTADOS_BRASIL, NIVEL_ESCOLARIDADE } from '../utils/estadosBrasil';
 import './CurriculoForm.css';
 
 function CurriculoForm({ curriculo = null, onSubmit, loading = false }) {
+  // Separar nome completo em nome e sobrenome se existir
+  const nomeCompleto = curriculo?.nome || '';
+  const partesNome = nomeCompleto.split(' ');
+  const nomeInicial = partesNome[0] || '';
+  const sobrenomeInicial = partesNome.slice(1).join(' ') || '';
+
+  // Separar residência em cidade e estado se existir
+  const residenciaCompleta = curriculo?.residencia || '';
+  const partesResidencia = residenciaCompleta.split(', ');
+  const cidadeInicial = partesResidencia[0] || '';
+  const estadoInicial = partesResidencia[1] || '';
+
   const [formData, setFormData] = useState({
-    nome: curriculo?.nome || '',
-    residencia: curriculo?.residencia || '',
+    nome: nomeInicial,
+    sobrenome: sobrenomeInicial,
+    cidade: cidadeInicial,
+    estado: estadoInicial,
     dataNascimento: curriculo?.dataNascimento || '',
     nivelEscolaridade: curriculo?.nivelEscolaridade || '',
+    nomeUniversidade: curriculo?.nomeUniversidade || '',
+    cargoDesejado: curriculo?.cargoDesejado || '',
+    pretensaoSalarial: curriculo?.pretensaoSalarial || '',
+    disponibilidadeMudanca: curriculo?.disponibilidadeMudanca || false,
+    disponibilidadeViagem: curriculo?.disponibilidadeViagem || false,
+    experiencias: curriculo?.experiencias || [],
     cursosComplementares: curriculo?.cursosComplementares || [],
     idiomas: curriculo?.idiomas || [],
     skills: curriculo?.skills || [{ nome: '', nivel: '' }],
   });
 
   const [errors, setErrors] = useState({});
+
+  // Verificar se precisa mostrar campo de universidade
+  const mostrarUniversidade = formData.nivelEscolaridade === 'Superior Incompleto' || 
+                              formData.nivelEscolaridade === 'Superior Completo';
 
   const validate = () => {
     const newErrors = {};
@@ -21,8 +46,16 @@ function CurriculoForm({ curriculo = null, onSubmit, loading = false }) {
       newErrors.nome = 'Nome é obrigatório';
     }
 
-    if (!formData.residencia.trim()) {
-      newErrors.residencia = 'Residência é obrigatória';
+    if (!formData.sobrenome.trim()) {
+      newErrors.sobrenome = 'Sobrenome é obrigatório';
+    }
+
+    if (!formData.cidade.trim()) {
+      newErrors.cidade = 'Cidade é obrigatória';
+    }
+
+    if (!formData.estado) {
+      newErrors.estado = 'Estado é obrigatório';
     }
 
     if (!formData.dataNascimento) {
@@ -37,6 +70,10 @@ function CurriculoForm({ curriculo = null, onSubmit, loading = false }) {
 
     if (!formData.nivelEscolaridade.trim()) {
       newErrors.nivelEscolaridade = 'Nível de escolaridade é obrigatório';
+    }
+
+    if (mostrarUniversidade && !formData.nomeUniversidade.trim()) {
+      newErrors.nomeUniversidade = 'Nome da universidade é obrigatório para nível superior';
     }
 
     if (formData.skills.length === 0 || formData.skills.some(s => !s.nome.trim())) {
@@ -54,18 +91,31 @@ function CurriculoForm({ curriculo = null, onSubmit, loading = false }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (validate()) {
+      // Combinar nome e sobrenome
+      const nomeCompleto = `${formData.nome.trim()} ${formData.sobrenome.trim()}`;
+      
+      // Combinar cidade e estado
+      const residencia = `${formData.cidade.trim()}, ${formData.estado}`;
+
       // Limpar skills vazias
       const skillsLimpas = formData.skills.filter(s => s.nome.trim());
+
       onSubmit({
         ...formData,
+        nome: nomeCompleto,
+        residencia: residencia,
         skills: skillsLimpas,
       });
     }
   };
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+    
     // Limpar erro do campo
     if (errors[name]) {
       setErrors(prev => {
@@ -145,34 +195,103 @@ function CurriculoForm({ curriculo = null, onSubmit, loading = false }) {
     }));
   };
 
+  const addExperiencia = () => {
+    setFormData(prev => ({
+      ...prev,
+      experiencias: [...prev.experiencias, {
+        cargo: '',
+        empresa: '',
+        dataInicio: '',
+        dataFim: '',
+        descricao: '',
+        atualmente: false,
+      }],
+    }));
+  };
+
+  const removeExperiencia = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      experiencias: prev.experiencias.filter((_, i) => i !== index),
+    }));
+  };
+
+  const updateExperiencia = (index, field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      experiencias: prev.experiencias.map((exp, i) =>
+        i === index ? { ...exp, [field]: value } : exp
+      ),
+    }));
+  };
+
   return (
     <form onSubmit={handleSubmit} className="curriculo-form">
       <div className="form-section">
         <h3>Dados Pessoais</h3>
-        <div className="form-group">
-          <label htmlFor="nome">Nome *</label>
-          <input
-            type="text"
-            id="nome"
-            name="nome"
-            value={formData.nome}
-            onChange={handleChange}
-            className={errors.nome ? 'error' : ''}
-          />
-          {errors.nome && <span className="error-message">{errors.nome}</span>}
+        <div className="form-row-2">
+          <div className="form-group">
+            <label htmlFor="nome">Nome *</label>
+            <input
+              type="text"
+              id="nome"
+              name="nome"
+              value={formData.nome}
+              onChange={handleChange}
+              className={errors.nome ? 'error' : ''}
+              placeholder="Seu primeiro nome"
+            />
+            {errors.nome && <span className="error-message">{errors.nome}</span>}
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="sobrenome">Sobrenome *</label>
+            <input
+              type="text"
+              id="sobrenome"
+              name="sobrenome"
+              value={formData.sobrenome}
+              onChange={handleChange}
+              className={errors.sobrenome ? 'error' : ''}
+              placeholder="Seu sobrenome"
+            />
+            {errors.sobrenome && <span className="error-message">{errors.sobrenome}</span>}
+          </div>
         </div>
 
-        <div className="form-group">
-          <label htmlFor="residencia">Residência *</label>
-          <input
-            type="text"
-            id="residencia"
-            name="residencia"
-            value={formData.residencia}
-            onChange={handleChange}
-            className={errors.residencia ? 'error' : ''}
-          />
-          {errors.residencia && <span className="error-message">{errors.residencia}</span>}
+        <div className="form-row-2">
+          <div className="form-group">
+            <label htmlFor="cidade">Cidade *</label>
+            <input
+              type="text"
+              id="cidade"
+              name="cidade"
+              value={formData.cidade}
+              onChange={handleChange}
+              className={errors.cidade ? 'error' : ''}
+              placeholder="Ex: São Paulo"
+            />
+            {errors.cidade && <span className="error-message">{errors.cidade}</span>}
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="estado">Estado *</label>
+            <select
+              id="estado"
+              name="estado"
+              value={formData.estado}
+              onChange={handleChange}
+              className={errors.estado ? 'error' : ''}
+            >
+              <option value="">Selecione o estado</option>
+              {ESTADOS_BRASIL.map(estado => (
+                <option key={estado.sigla} value={estado.sigla}>
+                  {estado.nome}
+                </option>
+              ))}
+            </select>
+            {errors.estado && <span className="error-message">{errors.estado}</span>}
+          </div>
         </div>
 
         <div className="form-group">
@@ -184,23 +303,178 @@ function CurriculoForm({ curriculo = null, onSubmit, loading = false }) {
             value={formData.dataNascimento}
             onChange={handleChange}
             className={errors.dataNascimento ? 'error' : ''}
+            max={new Date().toISOString().split('T')[0]}
           />
           {errors.dataNascimento && <span className="error-message">{errors.dataNascimento}</span>}
         </div>
 
         <div className="form-group">
           <label htmlFor="nivelEscolaridade">Nível de Escolaridade *</label>
-          <input
-            type="text"
+          <select
             id="nivelEscolaridade"
             name="nivelEscolaridade"
             value={formData.nivelEscolaridade}
             onChange={handleChange}
-            placeholder="Ex: Superior, Médio, Técnico..."
             className={errors.nivelEscolaridade ? 'error' : ''}
-          />
+          >
+            <option value="">Selecione o nível</option>
+            {NIVEL_ESCOLARIDADE.map(nivel => (
+              <option key={nivel} value={nivel}>
+                {nivel}
+              </option>
+            ))}
+          </select>
           {errors.nivelEscolaridade && <span className="error-message">{errors.nivelEscolaridade}</span>}
         </div>
+
+        {mostrarUniversidade && (
+          <div className="form-group">
+            <label htmlFor="nomeUniversidade">Nome da Universidade *</label>
+            <input
+              type="text"
+              id="nomeUniversidade"
+              name="nomeUniversidade"
+              value={formData.nomeUniversidade}
+              onChange={handleChange}
+              className={errors.nomeUniversidade ? 'error' : ''}
+              placeholder="Ex: Universidade de São Paulo"
+            />
+            {errors.nomeUniversidade && <span className="error-message">{errors.nomeUniversidade}</span>}
+          </div>
+        )}
+      </div>
+
+      <div className="form-section">
+        <h3>Objetivos Profissionais</h3>
+        <div className="form-group">
+          <label htmlFor="cargoDesejado">Cargo Desejado</label>
+          <input
+            type="text"
+            id="cargoDesejado"
+            name="cargoDesejado"
+            value={formData.cargoDesejado}
+            onChange={handleChange}
+            placeholder="Ex: Desenvolvedor Full Stack"
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="pretensaoSalarial">Pretensão Salarial (R$)</label>
+          <input
+            type="number"
+            id="pretensaoSalarial"
+            name="pretensaoSalarial"
+            value={formData.pretensaoSalarial}
+            onChange={handleChange}
+            placeholder="Ex: 5000"
+            min="0"
+            step="100"
+          />
+        </div>
+
+        <div className="form-row-2">
+          <div className="form-group checkbox-group">
+            <label>
+              <input
+                type="checkbox"
+                name="disponibilidadeMudanca"
+                checked={formData.disponibilidadeMudanca}
+                onChange={handleChange}
+              />
+              <span>Disponível para mudança de cidade</span>
+            </label>
+          </div>
+
+          <div className="form-group checkbox-group">
+            <label>
+              <input
+                type="checkbox"
+                name="disponibilidadeViagem"
+                checked={formData.disponibilidadeViagem}
+                onChange={handleChange}
+              />
+              <span>Disponível para viagens</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div className="form-section">
+        <div className="section-header">
+          <h3>Experiências Profissionais</h3>
+          <button type="button" onClick={addExperiencia} className="btn-add">
+            + Adicionar Experiência
+          </button>
+        </div>
+        {formData.experiencias.map((exp, index) => (
+          <div key={index} className="experiencia-item">
+            <div className="form-row-2">
+              <div className="form-group">
+                <label>Cargo</label>
+                <input
+                  type="text"
+                  placeholder="Ex: Desenvolvedor"
+                  value={exp.cargo}
+                  onChange={(e) => updateExperiencia(index, 'cargo', e.target.value)}
+                />
+              </div>
+              <div className="form-group">
+                <label>Empresa</label>
+                <input
+                  type="text"
+                  placeholder="Nome da empresa"
+                  value={exp.empresa}
+                  onChange={(e) => updateExperiencia(index, 'empresa', e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="form-row-2">
+              <div className="form-group">
+                <label>Data Início</label>
+                <input
+                  type="date"
+                  value={exp.dataInicio}
+                  onChange={(e) => updateExperiencia(index, 'dataInicio', e.target.value)}
+                />
+              </div>
+              <div className="form-group">
+                <label>Data Fim</label>
+                <input
+                  type="date"
+                  value={exp.dataFim}
+                  onChange={(e) => updateExperiencia(index, 'dataFim', e.target.value)}
+                  disabled={exp.atualmente}
+                />
+              </div>
+            </div>
+            <div className="form-group checkbox-group">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={exp.atualmente}
+                  onChange={(e) => updateExperiencia(index, 'atualmente', e.target.checked)}
+                />
+                <span>Trabalho atualmente aqui</span>
+              </label>
+            </div>
+            <div className="form-group">
+              <label>Descrição</label>
+              <textarea
+                placeholder="Descreva suas responsabilidades e conquistas"
+                value={exp.descricao}
+                onChange={(e) => updateExperiencia(index, 'descricao', e.target.value)}
+                rows="3"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => removeExperiencia(index)}
+              className="btn-remove"
+            >
+              Remover Experiência
+            </button>
+          </div>
+        ))}
       </div>
 
       <div className="form-section">
@@ -280,6 +554,7 @@ function CurriculoForm({ curriculo = null, onSubmit, loading = false }) {
                 placeholder="Carga horária"
                 value={curso.cargaHoraria}
                 onChange={(e) => updateCurso(index, 'cargaHoraria', e.target.value)}
+                min="0"
               />
             </div>
             <button
@@ -343,4 +618,3 @@ function CurriculoForm({ curriculo = null, onSubmit, loading = false }) {
 }
 
 export default CurriculoForm;
-

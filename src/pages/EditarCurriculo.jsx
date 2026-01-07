@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { curriculoService } from '../services/api';
 import CurriculoForm from '../components/CurriculoForm';
+import LoadingState from '../components/LoadingState';
 import './EditarCurriculo.css';
 
 function EditarCurriculo() {
@@ -46,7 +47,7 @@ function EditarCurriculo() {
     return (
       <div className="editar-curriculo">
         <div className="container">
-          <div className="loading">Carregando...</div>
+          <LoadingState message="Carregando currículo..." />
         </div>
       </div>
     );

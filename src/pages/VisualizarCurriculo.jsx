@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { curriculoService } from '../services/api';
+import LoadingState from '../components/LoadingState';
 import './VisualizarCurriculo.css';
 
 function VisualizarCurriculo() {
@@ -43,7 +44,7 @@ function VisualizarCurriculo() {
     return (
       <div className="visualizar-curriculo">
         <div className="container">
-          <div className="loading">Carregando...</div>
+          <LoadingState message="Carregando currículo..." />
         </div>
       </div>
     );
@@ -101,8 +102,83 @@ function VisualizarCurriculo() {
                 <strong>Nível de Escolaridade:</strong>
                 <span>{curriculo.nivelEscolaridade}</span>
               </div>
+              {curriculo.nomeUniversidade && (
+                <div className="info-item">
+                  <strong>Universidade:</strong>
+                  <span>{curriculo.nomeUniversidade}</span>
+                </div>
+              )}
             </div>
           </div>
+
+          {(curriculo.cargoDesejado || curriculo.pretensaoSalarial) && (
+            <div className="info-section">
+              <h3>Objetivos Profissionais</h3>
+              <div className="info-grid">
+                {curriculo.cargoDesejado && (
+                  <div className="info-item">
+                    <strong>Cargo Desejado:</strong>
+                    <span>{curriculo.cargoDesejado}</span>
+                  </div>
+                )}
+                {curriculo.pretensaoSalarial && (
+                  <div className="info-item">
+                    <strong>Pretensão Salarial:</strong>
+                    <span>
+                      {new Intl.NumberFormat('pt-BR', {
+                        style: 'currency',
+                        currency: 'BRL',
+                      }).format(curriculo.pretensaoSalarial)}
+                    </span>
+                  </div>
+                )}
+                <div className="info-item">
+                  <strong>Disponibilidade:</strong>
+                  <span>
+                    {curriculo.disponibilidadeMudanca && 'Mudança '}
+                    {curriculo.disponibilidadeViagem && 'Viagens'}
+                    {!curriculo.disponibilidadeMudanca && !curriculo.disponibilidadeViagem && 'Não informado'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {curriculo.experiencias && curriculo.experiencias.length > 0 && (
+            <div className="info-section">
+              <h3>Experiências Profissionais</h3>
+              <div className="list">
+                {curriculo.experiencias.map((exp, index) => (
+                  <div key={index} className="list-item experiencia-item">
+                    <div className="list-item-header">
+                      <div>
+                        <strong>{exp.cargo}</strong>
+                        {exp.empresa && <span className="empresa-nome"> - {exp.empresa}</span>}
+                      </div>
+                      <div className="experiencia-periodo">
+                        {exp.dataInicio && (
+                          <span>
+                            {new Date(exp.dataInicio).toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' })}
+                          </span>
+                        )}
+                        {exp.dataInicio && (exp.dataFim || exp.atualmente) && ' - '}
+                        {exp.atualmente ? (
+                          <span className="badge badge-atual">Atual</span>
+                        ) : exp.dataFim ? (
+                          <span>
+                            {new Date(exp.dataFim).toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' })}
+                          </span>
+                        ) : null}
+                      </div>
+                    </div>
+                    {exp.descricao && (
+                      <p className="list-item-subtitle">{exp.descricao}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {curriculo.skills && curriculo.skills.length > 0 && (
             <div className="info-section">

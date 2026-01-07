@@ -1,0 +1,267 @@
+.detalhes-vaga {
+  min-height: calc(100vh - 80px);
+  padding: 3rem 0;
+  background: transparent;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.breadcrumb a {
+  color: var(--primary);
+  text-decoration: none;
+  transition: color var(--transition-base);
+}
+
+.breadcrumb a:hover {
+  color: var(--primary-dark);
+}
+
+.vaga-detalhes {
+  background: var(--bg-primary);
+  padding: 3rem;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--gray-200);
+  animation: fadeInUp 0.5s ease-out;
+}
+
+.vaga-header-detalhes {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 2px solid var(--gray-100);
+  gap: 2rem;
+}
+
+.vaga-header-detalhes h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 1rem 0;
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+}
+
+.vaga-empresa-detalhes {
+  margin-top: 1rem;
+}
+
+.empresa-nome {
+  display: inline-block;
+  background: linear-gradient(135deg, var(--primary-light) 0%, var(--secondary) 100%);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-full);
+  font-size: 1.125rem;
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+
+.badge-destaque {
+  background: linear-gradient(135deg, var(--warning) 0%, #f59e0b 100%);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-full);
+  font-size: 1rem;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: var(--shadow-sm);
+}
+
+.vaga-info-detalhes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--gray-200);
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.info-label {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-value {
+  color: var(--text-primary);
+  font-size: 1.125rem;
+  font-weight: 500;
+}
+
+.vaga-descricao-detalhes,
+.vaga-requisitos,
+.vaga-beneficios {
+  margin-bottom: 2.5rem;
+  padding-bottom: 2.5rem;
+  border-bottom: 2px solid var(--gray-100);
+}
+
+.vaga-descricao-detalhes h2,
+.vaga-requisitos h2,
+.vaga-beneficios h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 1.5rem 0;
+  letter-spacing: -0.3px;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.vaga-descricao-detalhes h2::before,
+.vaga-requisitos h2::before,
+.vaga-beneficios h2::before {
+  content: '';
+  width: 4px;
+  height: 24px;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  border-radius: var(--radius-full);
+}
+
+.descricao-content {
+  color: var(--text-secondary);
+  line-height: 1.8;
+  font-size: 1.05rem;
+}
+
+.descricao-content p {
+  margin: 0 0 1rem 0;
+}
+
+.vaga-requisitos ul,
+.vaga-beneficios ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.vaga-requisitos li,
+.vaga-beneficios li {
+  padding: 0.75rem 0;
+  padding-left: 2rem;
+  position: relative;
+  color: var(--text-secondary);
+  line-height: 1.8;
+  font-size: 1.05rem;
+}
+
+.vaga-requisitos li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: var(--success);
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+.vaga-beneficios li::before {
+  content: '🎁';
+  position: absolute;
+  left: 0;
+  font-size: 1.25rem;
+}
+
+.vaga-candidatura {
+  background: var(--bg-secondary);
+  padding: 2rem;
+  border-radius: var(--radius-xl);
+  border: 2px solid var(--primary-light);
+  margin-top: 2rem;
+}
+
+.vaga-candidatura h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 1.5rem 0;
+}
+
+.sucesso-candidatura {
+  text-align: center;
+  padding: 2rem;
+}
+
+.sucesso-candidatura p {
+  color: var(--success);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0.5rem 0;
+}
+
+.sem-curriculo {
+  text-align: center;
+  padding: 2rem;
+}
+
+.sem-curriculo p {
+  color: var(--text-secondary);
+  font-size: 1.125rem;
+  margin: 0 0 1.5rem 0;
+}
+
+.btn-large {
+  padding: 1.25rem 3rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.vaga-actions-footer {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .vaga-detalhes {
+    padding: 1.5rem;
+  }
+
+  .vaga-header-detalhes {
+    flex-direction: column;
+  }
+
+  .vaga-header-detalhes h1 {
+    font-size: 2rem;
+  }
+
+  .vaga-info-detalhes {
+    grid-template-columns: 1fr;
+  }
+}
+

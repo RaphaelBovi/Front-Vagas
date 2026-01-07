@@ -5,6 +5,7 @@ import CriarCurriculo from './pages/CriarCurriculo';
 import EditarCurriculo from './pages/EditarCurriculo';
 import VisualizarCurriculo from './pages/VisualizarCurriculo';
 import Vagas from './pages/Vagas';
+import DetalhesVaga from './pages/DetalhesVaga';
 import './App.css';
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
             <Route path="/curriculo/:id" element={<VisualizarCurriculo />} />
             <Route path="/curriculo/:id/editar" element={<EditarCurriculo />} />
             <Route path="/curriculo/:id/vagas" element={<Vagas />} />
+            <Route path="/vaga/:id" element={<DetalhesVaga />} />
           </Routes>
         </main>
       </div>
