@@ -1,12 +1,22 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+// Configuração da URL da API
+// Desenvolvimento
+const API_URL_DEV = 'http://localhost:8080/api';
+
+// Produção
+const API_URL_PROD = 'https://api-vagasraphael.com/api';
+
+// Usa variável de ambiente se disponível, senão usa produção como padrão
+const API_BASE_URL = import.meta.env.VITE_API_URL || 
+  (import.meta.env.MODE === 'development' ? API_URL_DEV : API_URL_PROD);
 
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // Para enviar cookies se necessário
 });
 
 // Interceptor para tratamento de erros

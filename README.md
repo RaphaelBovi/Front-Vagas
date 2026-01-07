@@ -24,7 +24,7 @@ cp env.example .env
 
 2. Configure a URL da API no arquivo `.env`:
    - **Para desenvolvimento local:** `VITE_API_URL=http://localhost:8080/api`
-   - **Para produção (Railway):** `VITE_API_URL=https://api-restvagas-production.up.railway.app/api`
+   - **Para produção (Domínio personalizado):** `VITE_API_URL=https://api-vagasraphael.com/api`
    
    ⚠️ **Importante:** O arquivo `.env` já está configurado com a URL de produção. Para desenvolvimento local, altere para `http://localhost:8080/api`
 
@@ -116,6 +116,16 @@ A interface foi desenvolvida com:
 - Feedback visual em ações do usuário
 - Mensagens de erro e sucesso
 - Validação em tempo real
+
+## 🌐 Deploy em Produção
+
+O projeto está hospedado no Railway:
+
+- **Frontend:** https://raphaelvagas.com
+- **Backend API:** https://api-vagasraphael.com/api
+- **Banco de Dados:** PostgreSQL no Railway
+
+Para mais informações sobre o deploy, consulte o arquivo [RAILWAY_SETUP.md](./RAILWAY_SETUP.md).
 
 ## 📄 Licença
 
