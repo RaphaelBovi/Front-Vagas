@@ -18,7 +18,7 @@ export default defineConfig({
     outDir: 'dist',
     assetsDir: 'assets',
     sourcemap: false,
-    minify: 'terser',
+    minify: 'esbuild', // Usa esbuild (padrão do Vite, mais rápido e não requer dependência extra)
     rollupOptions: {
       output: {
         manualChunks: {
