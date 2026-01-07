@@ -1,28 +1,38 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { curriculoService } from '../services/api';
+import { vagaService, empresaService, curriculoService } from '../services/api';
+import VagaCard from '../components/VagaCard';
+import FiltrosVagas from '../components/FiltrosVagas';
 import './Home.css';
 
 function Home() {
-  const [curriculos, setCurriculos] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [vagasDestaque, setVagasDestaque] = useState([]);
+  const [vagasRecentes, setVagasRecentes] = useState([]);
+  const [vagasFiltradas, setVagasFiltradas] = useState([]);
+  const [empresas, setEmpresas] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadingBusca, setLoadingBusca] = useState(false);
   const [error, setError] = useState(null);
-  const [searchId, setSearchId] = useState('');
-  const [curriculoEncontrado, setCurriculoEncontrado] = useState(null);
+  const [buscaAtiva, setBuscaAtiva] = useState(false);
+  const [palavraChave, setPalavraChave] = useState('');
+  const [filtros, setFiltros] = useState({});
 
-  const buscarCurriculo = async () => {
-    if (!searchId.trim()) {
-      setError('Por favor, informe um ID');
-      return;
-    }
+  useEffect(() => {
+    carregarDadosIniciais();
+  }, []);
 
+  const carregarDadosIniciais = async () => {
     setLoading(true);
     setError(null);
-    setCurriculoEncontrado(null);
-
     try {
-      const data = await curriculoService.buscarPorId(searchId);
-      setCurriculoEncontrado(data);
+      const [destaque, recentes, empresasData] = await Promise.all([
+        vagaService.buscarDestaque().catch(() => []),
+        vagaService.buscarRecentes(10).catch(() => []),
+        empresaService.listar().catch(() => []),
+      ]);
+      setVagasDestaque(destaque);
+      setVagasRecentes(recentes);
+      setEmpresas(empresasData);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -30,114 +40,225 @@ function Home() {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Tem certeza que deseja deletar este currículo?')) {
-      return;
-    }
+  const handleBuscar = async (e) => {
+    e.preventDefault();
+    if (!palavraChave.trim()) return;
+
+    setLoadingBusca(true);
+    setError(null);
+    setBuscaAtiva(true);
 
     try {
-      await curriculoService.deletar(id);
-      if (curriculoEncontrado?.id === id) {
-        setCurriculoEncontrado(null);
-      }
-      alert('Currículo deletado com sucesso!');
+      const resultados = await vagaService.buscar(palavraChave);
+      setVagasFiltradas(resultados);
     } catch (err) {
-      alert('Erro ao deletar: ' + err.message);
+      setError(err.message);
+      setVagasFiltradas([]);
+    } finally {
+      setLoadingBusca(false);
     }
   };
+
+  const handleFiltrar = async (filtrosAplicados) => {
+    setLoadingBusca(true);
+    setError(null);
+    setBuscaAtiva(true);
+    setFiltros(filtrosAplicados);
+
+    try {
+      const resultados = await vagaService.listar(filtrosAplicados);
+      setVagasFiltradas(resultados);
+    } catch (err) {
+      setError(err.message);
+      setVagasFiltradas([]);
+    } finally {
+      setLoadingBusca(false);
+    }
+  };
+
+  const handleLimparFiltros = () => {
+    setFiltros({});
+    setVagasFiltradas([]);
+    setBuscaAtiva(false);
+    setPalavraChave('');
+  };
+
+  const handleCandidatar = async (vagaId, curriculoId) => {
+    if (!curriculoId) {
+      alert('Você precisa ter um currículo cadastrado para se candidatar. Crie um currículo primeiro!');
+      return;
+    }
+    try {
+      await vagaService.candidatar(vagaId, curriculoId);
+      alert('Candidatura realizada com sucesso!');
+    } catch (err) {
+      alert('Erro ao candidatar-se: ' + err.message);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="home">
+        <div className="container">
+          <div className="loading-state">
+            <div className="spinner"></div>
+            <p>Carregando vagas...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="home">
       <div className="container">
-        <div className="home-header">
-          <h2>Buscar Currículo</h2>
-          <p>Digite o ID do currículo para visualizar</p>
+        {/* Hero Section */}
+        <div className="home-hero">
+          <h1>Encontre a Vaga Ideal para Você</h1>
+          <p>Milhares de oportunidades esperando por você</p>
         </div>
 
-        <div className="search-section">
-          <div className="search-box">
+        {/* Busca Rápida */}
+        <div className="busca-rapida">
+          <form onSubmit={handleBuscar} className="search-box">
             <input
               type="text"
-              placeholder="Digite o ID do currículo"
-              value={searchId}
-              onChange={(e) => setSearchId(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && buscarCurriculo()}
+              placeholder="Buscar vagas por palavra-chave (ex: Desenvolvedor, Analista...)"
+              value={palavraChave}
+              onChange={(e) => setPalavraChave(e.target.value)}
             />
-            <button onClick={buscarCurriculo} disabled={loading}>
-              {loading ? 'Buscando...' : 'Buscar'}
+            <button type="submit" disabled={loadingBusca}>
+              {loadingBusca ? 'Buscando...' : '🔍 Buscar'}
             </button>
-          </div>
+          </form>
         </div>
 
+        {/* Filtros */}
+        <FiltrosVagas onFiltrar={handleFiltrar} onLimpar={handleLimparFiltros} />
+
+        {/* Erro */}
         {error && (
           <div className="alert alert-error">
             {error}
           </div>
         )}
 
-        {curriculoEncontrado && (
-          <div className="curriculo-card">
-            <div className="card-header">
-              <h3>{curriculoEncontrado.nome}</h3>
-              <div className="card-actions">
-                <Link
-                  to={`/curriculo/${curriculoEncontrado.id}`}
-                  className="btn btn-primary"
-                >
-                  Ver Detalhes
-                </Link>
-                <Link
-                  to={`/curriculo/${curriculoEncontrado.id}/editar`}
-                  className="btn btn-secondary"
-                >
-                  Editar
-                </Link>
-                <Link
-                  to={`/curriculo/${curriculoEncontrado.id}/vagas`}
-                  className="btn btn-success"
-                >
-                  Ver Vagas
-                </Link>
-                <button
-                  onClick={() => handleDelete(curriculoEncontrado.id)}
-                  className="btn btn-danger"
-                >
-                  Deletar
-                </button>
+        {/* Resultados da Busca/Filtros */}
+        {buscaAtiva && (
+          <section className="section-vagas">
+            <div className="section-header">
+              <h2>Resultados da Busca</h2>
+              <button onClick={handleLimparFiltros} className="btn btn-secondary">
+                Limpar Busca
+              </button>
+            </div>
+            {loadingBusca ? (
+              <div className="loading-state">
+                <div className="spinner"></div>
+                <p>Buscando vagas...</p>
               </div>
+            ) : vagasFiltradas.length === 0 ? (
+              <div className="empty-state">
+                <p>😔 Nenhuma vaga encontrada com os filtros selecionados.</p>
+                <p>Tente ajustar os filtros ou buscar por outras palavras-chave.</p>
+              </div>
+            ) : (
+              <div className="vagas-grid">
+                {vagasFiltradas.map((vaga) => (
+                  <VagaCard
+                    key={vaga.id}
+                    vaga={vaga}
+                    onCandidatar={handleCandidatar}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* Vagas em Destaque */}
+        {!buscaAtiva && vagasDestaque.length > 0 && (
+          <section className="section-vagas">
+            <div className="section-header">
+              <h2>⭐ Vagas em Destaque</h2>
+              <Link to="/vagas/destaque" className="btn btn-secondary">
+                Ver Todas
+              </Link>
             </div>
-            <div className="card-body">
-              <p><strong>Residência:</strong> {curriculoEncontrado.residencia}</p>
-              <p><strong>Data de Nascimento:</strong> {new Date(curriculoEncontrado.dataNascimento).toLocaleDateString('pt-BR')}</p>
-              <p><strong>Escolaridade:</strong> {curriculoEncontrado.nivelEscolaridade}</p>
-              {curriculoEncontrado.skills && curriculoEncontrado.skills.length > 0 && (
-                <div>
-                  <strong>Skills:</strong>
-                  <div className="tags">
-                    {curriculoEncontrado.skills.map((skill, index) => (
-                      <span key={index} className="tag">
-                        {skill.nome} ({skill.nivel})
-                      </span>
-                    ))}
-                  </div>
+            <div className="vagas-grid">
+              {vagasDestaque.map((vaga) => (
+                <VagaCard
+                  key={vaga.id}
+                  vaga={vaga}
+                  onCandidatar={handleCandidatar}
+                />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Vagas Recentes */}
+        {!buscaAtiva && vagasRecentes.length > 0 && (
+          <section className="section-vagas">
+            <div className="section-header">
+              <h2>🆕 Vagas Recentes</h2>
+              <Link to="/vagas/recentes" className="btn btn-secondary">
+                Ver Todas
+              </Link>
+            </div>
+            <div className="vagas-grid">
+              {vagasRecentes.map((vaga) => (
+                <VagaCard
+                  key={vaga.id}
+                  vaga={vaga}
+                  onCandidatar={handleCandidatar}
+                />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Empresas */}
+        {!buscaAtiva && empresas.length > 0 && (
+          <section className="section-empresas">
+            <div className="section-header">
+              <h2>🏢 Empresas Parceiras</h2>
+            </div>
+            <div className="empresas-grid">
+              {empresas.map((empresa) => (
+                <div key={empresa.id} className="empresa-card">
+                  <h3>{empresa.nome}</h3>
+                  {empresa.descricao && <p>{empresa.descricao}</p>}
+                  {empresa.site && (
+                    <a href={empresa.site} target="_blank" rel="noopener noreferrer" className="btn btn-primary">
+                      Visitar Site
+                    </a>
+                  )}
                 </div>
-              )}
+              ))}
             </div>
+          </section>
+        )}
+
+        {/* Empty States */}
+        {!buscaAtiva && vagasDestaque.length === 0 && vagasRecentes.length === 0 && (
+          <div className="empty-state">
+            <p>📋 Nenhuma vaga disponível no momento.</p>
+            <p>Volte mais tarde para ver novas oportunidades!</p>
           </div>
         )}
 
-        <div className="info-section">
-          <h3>Como usar</h3>
-          <ul>
-            <li>Digite o ID de um currículo existente para visualizá-lo</li>
-            <li>Crie um novo currículo clicando em "Novo Currículo" no menu</li>
-            <li>Após criar, você receberá o ID do currículo para futuras buscas</li>
-          </ul>
-        </div>
+        {/* CTA Section */}
+        <section className="cta-section">
+          <h2>Não encontrou o que procura?</h2>
+          <p>Crie seu currículo e receba recomendações personalizadas de vagas</p>
+          <Link to="/criar" className="btn btn-primary btn-large">
+            Criar Meu Currículo
+          </Link>
+        </section>
       </div>
     </div>
   );
 }
 
 export default Home;
-

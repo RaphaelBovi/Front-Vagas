@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { curriculoService } from '../services/api';
+import { curriculoService, vagaService } from '../services/api';
+import VagaCard from '../components/VagaCard';
+import LoadingState from '../components/LoadingState';
+import EmptyState from '../components/EmptyState';
 import './Vagas.css';
 
 function Vagas() {
@@ -14,7 +17,6 @@ function Vagas() {
   useEffect(() => {
     const carregarDados = async () => {
       try {
-        // Carregar currículo e vagas em paralelo
         const [curriculoData, vagasData] = await Promise.all([
           curriculoService.buscarPorId(id),
           curriculoService.buscarVagas(id),
@@ -31,11 +33,20 @@ function Vagas() {
     carregarDados();
   }, [id]);
 
+  const handleCandidatar = async (vagaId) => {
+    try {
+      await vagaService.candidatar(vagaId, id);
+      alert('Candidatura realizada com sucesso!');
+    } catch (err) {
+      alert('Erro ao candidatar-se: ' + err.message);
+    }
+  };
+
   if (loading) {
     return (
       <div className="vagas">
         <div className="container">
-          <div className="loading">Buscando vagas...</div>
+          <LoadingState message="Buscando vagas recomendadas..." />
         </div>
       </div>
     );
@@ -45,9 +56,10 @@ function Vagas() {
     return (
       <div className="vagas">
         <div className="container">
-          <div className="alert alert-error">
-            {error}
-          </div>
+          <EmptyState
+            message={error}
+            submessage="Não foi possível carregar as vagas. Tente novamente mais tarde."
+          />
           <div className="actions">
             <button onClick={() => navigate(`/curriculo/${id}`)} className="btn btn-primary">
               Voltar para Currículo
@@ -77,60 +89,35 @@ function Vagas() {
         </div>
 
         {vagas.length === 0 ? (
-          <div className="no-vagas">
-            <p>Nenhuma vaga encontrada no momento.</p>
-            <p>Tente atualizar mais tarde ou ajuste as skills do seu currículo.</p>
-          </div>
+          <EmptyState
+            message="Nenhuma vaga encontrada no momento."
+            submessage="Tente atualizar mais tarde ou ajuste as skills do seu currículo."
+          />
         ) : (
-          <div className="vagas-grid">
-            {vagas.map((vaga, index) => (
-              <div key={index} className="vaga-card">
-                <div className="vaga-header">
-                  <h3>{vaga.title || 'Título não disponível'}</h3>
-                  {vaga.company && (
-                    <span className="vaga-company">{vaga.company}</span>
-                  )}
-                </div>
-                {vaga.location && (
-                  <div className="vaga-location">
-                    📍 {vaga.location}
-                  </div>
-                )}
-                {vaga.description && (
-                  <div className="vaga-description">
-                    <p>{vaga.description.length > 200 
-                      ? `${vaga.description.substring(0, 200)}...` 
-                      : vaga.description}</p>
-                  </div>
-                )}
-                {vaga.url && (
-                  <div className="vaga-actions">
-                    <a
-                      href={vaga.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn btn-primary"
-                    >
-                      Ver Vaga Completa
-                    </a>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
+          <>
+            <div className="vagas-grid">
+              {vagas.map((vaga, index) => (
+                <VagaCard
+                  key={vaga.id || index}
+                  vaga={vaga}
+                  curriculoId={id}
+                  onCandidatar={handleCandidatar}
+                />
+              ))}
+            </div>
 
-        <div className="info-box">
-          <h4>💡 Dica</h4>
-          <p>
-            As vagas são encontradas com base nas skills e localização do seu currículo.
-            Para encontrar mais vagas, adicione mais skills relevantes ao seu perfil.
-          </p>
-        </div>
+            <div className="info-box">
+              <h4>💡 Dica</h4>
+              <p>
+                As vagas são encontradas com base nas skills e localização do seu currículo.
+                Para encontrar mais vagas, adicione mais skills relevantes ao seu perfil.
+              </p>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
 }
 
 export default Vagas;
-
