@@ -1,15 +1,15 @@
 import axios from 'axios';
 
 // Configuração da URL da API
-// Desenvolvimento
-const API_URL_DEV = 'http://localhost:8080/api';
+// SEMPRE usa a variável de ambiente VITE_API_URL
+// Em produção, esta variável DEVE estar configurada no Railway
+// Em desenvolvimento local, configure no arquivo .env
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
-// Produção
-const API_URL_PROD = 'https://api-vagasraphael.com/api';
-
-// Usa variável de ambiente se disponível, senão usa produção como padrão
-const API_BASE_URL = import.meta.env.VITE_API_URL || 
-  (import.meta.env.MODE === 'development' ? API_URL_DEV : API_URL_PROD);
+if (!API_BASE_URL) {
+  console.error('VITE_API_URL não está configurada! Configure a variável de ambiente.');
+  throw new Error('VITE_API_URL não está configurada. Configure a variável de ambiente no Railway ou no arquivo .env');
+}
 
 const api = axios.create({
   baseURL: API_BASE_URL,
