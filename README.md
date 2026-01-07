@@ -117,6 +117,16 @@ A interface foi desenvolvida com:
 - Mensagens de erro e sucesso
 - Validação em tempo real
 
+## 🌐 Deploy em Produção
+
+O projeto está hospedado no Railway:
+
+- **Frontend:** https://raphaelvagas.com
+- **Backend API:** https://api-vagasraphael.com/api
+- **Banco de Dados:** PostgreSQL no Railway
+
+Para mais informações sobre o deploy, consulte o arquivo [RAILWAY_SETUP.md](./RAILWAY_SETUP.md).
+
 ## 📄 Licença
 
 Este projeto está sob a licença MIT.
