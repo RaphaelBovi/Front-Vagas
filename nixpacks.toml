@@ -1,8 +1,14 @@
 [phases.setup]
 nixPkgs = ["nodejs-18_x", "npm-9_x"]
 
+[variables]
+NPM_CONFIG_PRODUCTION = "false"
+NPM_CONFIG_CACHE = "/tmp/.npm"
+
 [phases.install]
-cmds = ["npm ci"]
+cmds = [
+  "npm ci --no-audit --no-fund || npm install --no-audit --no-fund"
+]
 
 [phases.build]
 cmds = ["npm run build"]
